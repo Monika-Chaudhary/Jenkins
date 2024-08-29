@@ -1,0 +1,46 @@
+Pre-requisite : JAVA 11/JAVA 17 (install accordingly)
+
+1. Stop Jenkins Serice:
+systemctl status jenkinsService
+
+2. Take backup of Jenkins instance of home directory:
+go to Jenkins home directory: cd /pathToJenkins/homeDir
+tar -cvzf jenkins_TodayDate.tar.gz .jenkins/
+
+3. Move tar to save place:
+mkdir jenkins_TodayDate 
+mv /pathTojenkins_TodayDate.tar.gz /pathTojenkins_TodayDate/
+
+4. Take backup of current Jenkins war:
+cd /pathToJenkinsWar
+mv jenkins.war jenkins.war.old
+cp jenkins.war pathTojenkins_TodayDate/
+
+5. Get new version of Jenkins LTS War:
+cp /pathToJenkinsNewVersion /pathWhereJenkinsWarPlaced
+cd /pathWhereJenkinsWarPlaced
+mv jenkins-newVersion jenkins.war (optional step if newer version not with this jenkins.war name)
+
+6. Give same permission as Jenkins user:
+chown jenkinsUser:jenkinsUser jenkins.war
+chmod 777 jenkins.war
+
+7. Rename config.xml file which will disable authentication and other configurationS:
+mv config.xml config.xml.old
+
+8. Start Jenkins Service:
+systemctl start jenkinsService
+when we start jenkins service then new config.xml file will be generated
+jenkins will start without login 
+
+9. Update all plugins:
+Go to Manage Plugins -> Plugins -> Update Plugins according to Jenkins Version
+
+10. Stop Jenkins service:
+systemctl stop jenkinsService
+
+11. Rename current config.xml to another name:
+mv config.xml config.xml.new
+
+12. Rename old config file to config.xml:
+mv config.xml.old config.xml
