@@ -1,0 +1,89 @@
+Install active choices parameter plugin
+
+Put script on server where jenkins present so it pre-compiled: /path/listArtifact.sh
+count=$(curl -s -u nexusUsername:nexusPwd -X GET "$1" -H "accept:application/json" | jq '.data[] | .resourceURI + " " + .text' | wc -l)
+if [ $count -eq 0]
+then
+  echo "No Artifact Available"
+else
+  curl -s -u nexusUsername:nexusPwd -X GET "$1" -H "accept:application/json" | jq '.data[].text' | sed 's/"//g'
+fi
+
+In config of jenkins job - select project is parameterized
+Select active choices parameter
+Name - anyVariable like Version
+Select groovy script
+
+Script:
+def proc = "/pathToScript/listArtifact.sh linkOfNexusRepository".execute()
+proc.waitFor()
+
+def output=proc.in.text
+def exitCode=proc.exitValue()
+def error=proc.err.text
+
+if (error){
+  println "Error : ${error}"
+  println "Process Exit Code : ${exitCode}"
+  return exitCode
+}
+return output.tokenize()
+
+Approved this script in In-process Script Approval
+
+In pipeline steps: to get link respective of chosen artifact name from drop-down list->
+
+properties([
+  paramters([
+    choice(
+    name: 'Environment_Name',
+    choices: "Pre-production\nDev"
+    description: 'Pick env from list'
+    ),
+
+    [$class: 'ChoiceParamter',
+     name: 'Version',
+     description: 'Select artifact from drop down list',
+     script: [
+        $class: 'GroovyScript',
+         fallbackScript: [
+           classpath: [],
+           sandbox: false,
+            script: 
+              'return[\'Couldn't get artifact\']'
+         ]
+       script: [
+           classpath: [],
+            script: '''
+              def proc = "/pathToScript/listArtifact.sh linkOfNexusRepository".execute()
+proc.waitFor()
+
+def output=proc.in.text
+def exitCode=proc.exitValue()
+def error=proc.err.text
+
+if (error){
+  println "Error : ${error}"
+  println "Process Exit Code : ${exitCode}"
+  return exitCode
+}
+return output.tokenize()
+               '''
+         ]
+      ]
+    ]
+  ])
+])
+node{
+  stage('Get Version'){
+    echo "$Version"
+    withCredentials(nexus credentials){
+      sh'''
+      curl -s -u nexusUsername:$nexus -X GET "nexusRepoLink" -H "accept:application/json" | jq '.data[] | .resourceURI' | sed 's/"//g' > out.txt
+      artifactLink=$(grep -w "$Version" out.txt)
+      echo "$artifactLink"
+       wget -r --no-parent -q -nd $artifactLink -P ${WORKSPACE}/
+      '''
+    }
+  }
+}
