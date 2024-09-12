@@ -1,0 +1,20 @@
+Instead of plugin thinbackup we will go with cron job
+
+
+cat > /path/jenkinsBackupScript.sh
+todayDate=$(date +"%d-%m-%Y") //If want to take daily backup with date wise
+mkdir -P /path/to/folder/FullBackup
+cp -rf /pathToJenkinsHome/.jenkins/* /path/to/folder/FullBackup
+
+Give execute permission: chmod +x jenkinsBackupScript.sh
+
+Details of crontab:
+will display current user's cron jobs > crontab -l
+will display cron config file for current user's cron jobs > crontab -e
+will delete current user's cron jobs > crontab -r
+
+
+Edit file to create cron job to take daily backup everyday at 10 pm > crontab -e
+0 22 * * * /path/jenkinsBackupScript.sh
+
+See cron file > crontab -l
