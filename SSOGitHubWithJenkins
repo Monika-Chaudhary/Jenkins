@@ -1,0 +1,21 @@
+1. SSO and it's implementation in jenkins
+
+a. Go to github->settings->developer settings->oauth apps->new oauth app
+
+Here we get client Id and client secret
+App name - anyName
+Homepage url - jenkins url like https://machineAddrOrName:8888 (url of application homepage)
+Authorization callback URL: https://jenkinsUrl:8888/securityRealm/finishLogin
+
+b. Open jenkins-> manage jenkins->under security, configure global security
+
+Install : git authentication plugin
+
+After that global GitHub oauth settings visible
+Set GitHub web url- https://ghe.service.group
+GitHub API url- https://ghe.service.group/api/v3
+Give client Id and client secret  (from GitHub)
+Oauth scope-  read:org,user:email,repo
+
+______
+To test whether email is sent or not in lower env, we configure test01 mailbox
